@@ -51,13 +51,18 @@ def calproduct(request,pk):
    
 def calamount(request,pk):
     total=0
-    subtotal=0
+    gst=0
+    subtotal=[]
     rate=[]
     qty=[]
     data=Products.objects.filter(invoice=pk)
     print('**'*50)
     for i in data:
-        print(i.product)
+        qty.append(i.quantity)
+        rate.append(i.rate)
+    for i,j in qty,rate:
+        subtotal.append(i*j)
+    print(sum(subtotal))
     print('**'*50)
     return HttpResponse("Testing")
 
