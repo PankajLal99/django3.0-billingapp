@@ -3,6 +3,7 @@ from .forms import *
 from django.forms import inlineformset_factory
 from .models import *
 from django.http import HttpResponse
+from num2words import num2words
 # Create your views here.
 def showall(request):
     return render(request,'billing/show.html')
@@ -13,7 +14,8 @@ def create(request):
         form=BillingForm(request.POST)
         if form.is_valid():
             invoice=form.cleaned_data.get('invoice')
-            form.save()
+            ins=form.save()
+            amt=Amount.objects.create(invoice=ins)#create invoiec
             return redirect('/paresh/product/'+str(invoice))
     context={
         'form':form
@@ -21,20 +23,38 @@ def create(request):
     return render(request,'billing/create.html',context)
 
 def calproduct(request,pk):
-    ProductsFormSet=inlineformset_factory(Billing,Products,fields='__all__',extra=5)
+    g=0#gst
+    disc=0#discount
+    st=0#subtotal
+    ft=0#finaltotal
+    w=str()
+    
+    ProductsFormSet=inlineformset_factory(Billing,Products,fields='__all__',extra=3)
     invoice=Billing.objects.get(invoice=pk)
+    amtdata=Amount.objects.get(invoice=invoice)
+    print('FOUND'*50)
+    print(amtdata)
+    g=amtdata.gst
+    disc=amtdata.discount
+    st=amtdata.sub_total
+    ft=amtdata.total
+    w=amtdata.words
+    amtform=AmountForm(instance=invoice)
     formset=ProductsFormSet(instance=invoice)
     if request.method=='POST':
+        amtform=AmountForm(request.POST,instance=invoice)
         formset=ProductsFormSet(request.POST,instance=invoice)
-        print(formset)
-        if formset.is_valid():
-            print('hey')
+        if (formset.is_valid() and amtform.is_valid()):
+            print('inside'*50) 
+            gst=request.POST.get("gst")
+            dis=request.POST.get("dis")
+            Amount.objects.update(gst=gst,discount=dis)
             formset.save()
             return redirect('/paresh/calamount/'+str(pk))
-           
     context={
         'formset':formset,
-        'inv':pk,
+        'amtform':amtform,
+        'inv':pk,'g':g,'disc':disc,'st':st,'ft':ft,'w':w,
     }
     return render(request,'billing/billing.html',context)
 
@@ -52,19 +72,47 @@ def calproduct(request,pk):
 def calamount(request,pk):
     total=0
     gst=0
+    dis=0
     subtotal=[]
+    stot=0
     rate=[]
     qty=[]
+    w=str()
+    invoice=Billing.objects.get(invoice=pk)
     data=Products.objects.filter(invoice=pk)
+    #up=Amount.objects.get(invoice=invoice)
+    amtdata=Amount.objects.filter(invoice=pk)
+    for i in amtdata:
+        gst=i.gst
+        dis=i.discount
     print('**'*50)
     for i in data:
         qty.append(i.quantity)
         rate.append(i.rate)
-    for i,j in qty,rate:
-        subtotal.append(i*j)
-    print(sum(subtotal))
+    for i in range(len(data)):
+        subtotal.append(rate[i]*qty[i])
+    stot=round(sum(subtotal))
+    print('subtotal',stot)
+    print('gst',gst)
+    print('discount',dis)
+    total=stot+(gst/100)*stot
+    if dis>0:
+        total=total-total*(dis/100)
+    print('total',total)
+    w=str(num2words(total)).title()
+    print('words:',w)
     print('**'*50)
-    return HttpResponse("Testing")
+    amtdata.update(total=total,sub_total=stot,words=w)
+    #return HttpResponse('testing')
+    return redirect('/paresh/product/'+str(pk))
+    # amtdata=Amount.objects.get(invoice=invoice)
+    #         print('**'*50)
+    #         g=amtdata.gst
+    #         disc=amtdata.discount
+    #         st=amtdata.sub_total
+    #         ft=amtdata.total
+    #         w=amtdata.words
+    #         print('**'*50)
 
     
 

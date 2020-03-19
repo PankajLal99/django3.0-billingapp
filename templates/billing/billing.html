@@ -51,6 +51,7 @@
                     {% csrf_token %}
 
                     {% for form in formset %}
+                
                     <div class="form-row">
                         <div class="form-group col-md-2">
                             <label>{{form.product.label}}</label>
@@ -68,10 +69,35 @@
                             <label>{{form.unit.label}}</label>
                             {{form.unit|add_class:'form-control'|attr:"placeholder:Unit"}}
                         </div>
+                        <!-- <div class="form-group col-md-2">
+                            <label>{{form.DELETE.label}}</label>
+                            {{form.DELETE}}
+                        </div> -->
                     </div>
                     {% endfor %}
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <div class="col col-md-4 col-lg-4">
+                <div class="row">
+                    <label for="gst">GST</label>
+                    <input type="number" name="gst" step="0.01" class="form-control" id="gst" value="{{g}}"  placeholder="Total GST">
+                </div>
+                <div class="row">
+                    <label for="dis">Discount</label>
+                    <input type="number" name='dis' step="0.01" class="form-control" id="dis" value="{{disc}}" placeholder="Total Discount">
+                </div>
+                <div class="row">
+                    <label for="sub">Sub Total</label>
+                    <input type="number" name='sub' step="0.01" class="form-control" id="sub" value="{{st}}" placeholder="Total Amount" readonly>
+                </div>
+                <div class="row">
+                    <label for="tot">Total</label>
+                    <input type="number" name="tot" step="0.01" class="form-control" id="tot" value="{{ft}}"  placeholder="Total Amount" readonly>
+                </div>
+                <div class="row mt-3">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </div>
             </form>
         </div>
     </div>

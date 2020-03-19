@@ -14,5 +14,11 @@ class BillingForm(forms.ModelForm):
             'order_date':DateInput(),
             }
 
+class AmountForm(forms.ModelForm):
+    class Meta:
+        model=Amount
+        fields='__all__'
+        exclude=['invoice']
+
 
 
