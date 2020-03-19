@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Document</title>
+</head>
+<body>
+    <h2>For invoice no. {{inv}}</h2>
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ formset.management_form }}
+        {% for form in formset %}
+          {{form}}
+          <hr>
+        {% endfor %}
+        <button type="submit">Calculate</button>
+    </form>
+    <input type="number" readonly value="{{total}}">
+    <a href="{% url 'show' %}"></a>
+</body>
+</html>
